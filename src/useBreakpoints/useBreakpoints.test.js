@@ -1,6 +1,6 @@
 import React from 'react'
-import { shallow, mount } from 'enzyme'
-import toJson from 'enzyme-to-json'
+import { render, fireEvent, cleanup, waitForElement } from 'react-testing-library'
+import { renderHook } from 'react-hooks-testing-library'
 
 const mediaQueries = {
   isMobile: 'screen and (max-width: 500px)',
@@ -27,81 +27,26 @@ beforeEach(() => {
 })
 
 const generateDummyComponent = () => {
-  return ({ children }) => <div>{children}</div>
+  return props => <div>{[...props].map(prop => <p>{prop}</p>)}</div>
 }
 
-describe('@withBreakpoints', () => {
-  // it('renders without crashing', () => {
-  //   const breakpoints = createBreakpoints(mediaQueries)
-  //   const WrappedComponent = withBreakpoints(generateDummyComponent())
-  //   shallow(
-  //     <Provider breakpoints={breakpoints}>
-  //       <WrappedComponent />
-  //     </Provider>
-  //   )
-  // })
+it('should pass breakpoints state down to wrapped component', () => {
+  const breakpoints = createBreakpoints(mediaQueries)
+  const Component = generateDummyComponent()
 
-  // it('matches the snapshot', () => {
-  //   const WrappedComponent = withBreakpoints(generateDummyComponent())
-  //   const wrapper = shallow(<WrappedComponent />)
+  const WrappedComponent = () => {
+    const breakpoints = useBreakpoints()
 
-  //   expect(toJson(wrapper)).toMatchSnapshot()
-  // })
-
-  it('should pass breakpoints state down to wrapped component', () => {
-    const breakpoints = createBreakpoints(mediaQueries)
-    const Component = generateDummyComponent()
-    //const WrappedComponent = Component //withBreakpoints(Component)
-
-    const WrappedComponent = () => {
-      const breakpoints = useBreakpoints()
-
-      return (
-        <React.Fragment>
-          <Component breakpoints={breakpoints} />
-        </React.Fragment>
-      )
-    }
-
-    const wrapper = mount(
-      <Provider breakpoints={breakpoints}>
-        <WrappedComponent />
-      </Provider>
+    return (
+      <React.Fragment>
+        <Component data-testid="component" breakpoints={breakpoints} />
+      </React.Fragment>
     )
+  }
 
-    expect(wrapper.find(Component).props().breakpoints).toEqual({ ...stateMediaBreakpoints })
-
-    wrapper.unmount()
-  })
-
-  // it('should allow other props to pass through', () => {
-  //   const breakpoints = createBreakpoints(mediaQueries)
-  //   const Component = generateDummyComponent()
-  //   const WrappedComponent = withBreakpoints(Component)
-  //   const wrapper = mount(
-  //     <Provider breakpoints={breakpoints}>
-  //       <WrappedComponent className="test" />
-  //     </Provider>
-  //   )
-
-  //   expect(wrapper.find(Component).props()).toHaveProperty('className', 'test')
-
-  //   wrapper.unmount()
-  // })
-
-  // it('should have informational display name', () => {
-  //   const breakpoints = createBreakpoints(mediaQueries)
-  //   const Component = generateDummyComponent()
-  //   Component.displayName = 'TestComponent'
-  //   const WrappedComponent = withBreakpoints(Component)
-  //   const wrapper = mount(
-  //     <Provider breakpoints={breakpoints}>
-  //       <WrappedComponent className="test" />
-  //     </Provider>
-  //   )
-
-  //   expect(wrapper.find(WrappedComponent).name()).toEqual('withBreakpoints(TestComponent)')
-
-  //   wrapper.unmount()
-  // })
+  const rendered = renderHook(() => (
+    <Provider breakpoints={breakpoints}>
+      <WrappedComponent />
+    </Provider>
+  ))
 })
