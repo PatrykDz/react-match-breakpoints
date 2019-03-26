@@ -26,27 +26,12 @@ beforeEach(() => {
   useBreakpoints = require('../useBreakpoints')
 })
 
-const generateDummyComponent = () => {
-  return props => <div>{[...props].map(prop => <p>{prop}</p>)}</div>
-}
-
 it('should pass breakpoints state down to wrapped component', () => {
-  const breakpoints = createBreakpoints(mediaQueries)
-  const Component = generateDummyComponent()
+  const createdBreakpoints = createBreakpoints(mediaQueries)
 
-  const WrappedComponent = () => {
-    const breakpoints = useBreakpoints()
+  const { result } = renderHook(() => useBreakpoints(), {
+    wrapper: ({ children }) => <Provider breakpoints={createdBreakpoints}>{children}</Provider>,
+  })
 
-    return (
-      <React.Fragment>
-        <Component data-testid="component" breakpoints={breakpoints} />
-      </React.Fragment>
-    )
-  }
-
-  const rendered = renderHook(() => (
-    <Provider breakpoints={breakpoints}>
-      <WrappedComponent />
-    </Provider>
-  ))
+  expect(result.current.breakpoints).toBe(createdBreakpoints)
 })
